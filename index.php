@@ -38,10 +38,10 @@ try {
     $oBrand = new Brand($aBrandConfig[$hostname]);
 
 
-    if (!in_array(strtolower($hostname), $permitted_hosts)) {
-    	throw new Exception("Invalid hostname: ".$hostname);
-    	die();
-    }
+    //if (!in_array(strtolower($hostname), $permitted_hosts)) {
+    //	throw new Exception("Invalid hostname: ".$hostname);
+    //	die();
+    //}
 
     $permitted_methods = array("search");
 
@@ -153,7 +153,7 @@ try {
 
     if ($oSolrQuery->getFilterQueryByName('profile_type') == "(1 OR 0)")
     {
-        $oSolrSearch->setBoostQuery('prod_type:5^25, prod_type:3^5, prod_type:2^4, prod_type:1^3, prod_type:0');
+	$oSolrSearch->setBoostQuery('prod_type:5^25, prod_type:3^5, prod_type:2^3, prod_type:1^2, prod_type:0');
     }
 
     // add facetField
