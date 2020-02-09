@@ -18,6 +18,7 @@ require_once(BASE_PATH."/classes/activity.class.php");
 require_once(BASE_PATH."/classes/country.class.php");
 require_once(BASE_PATH."/classes/continent.class.php");
 require_once(BASE_PATH."/classes/Refdata.php");
+require_once(BASE_PATH."/classes/review.class.php");
 require_once(BASE_PATH."/classes/website.class.php");
 require_once(BASE_PATH."/classes/mapping.class.php");
 require_once(BASE_PATH."/classes/validation.class.php");
@@ -84,17 +85,3 @@ header('Content-Type: text/html; charset=utf-8');
 /* establish database connection */
 $db = new db($dsn,$debug = false);
 
-/* Global Exception Handler */
-function exception_handler($e) {
-	Logger::DB(1,"API Error: ".$e->getMessage());
-
-	$aResponse = array();
-	$aResponse['status'] = 0;
-
-	header('Content-type: application/x-json');
-	echo $_GET['callback'] . '('.json_encode($aResponse).')';
-	die();
-
-}
-
-set_exception_handler('exception_handler');

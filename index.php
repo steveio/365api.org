@@ -172,12 +172,10 @@ try {
 
     $oSolrSearch->setFacetFieldFilterQueryExclude($oSolrQuery->getFacetFieldFilterQueryExclude());
     $oSolrSearch->setSiteId($oBrand->GetSiteId());
-
-
+    
     // run the search
     $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort());
     $oSolrSearch->processResult();
-    
 
     // fetch returned profile id's, instantiate collection of profile objects
     $aProfileId = $oSolrSearch->getId();
@@ -187,16 +185,6 @@ try {
     if (is_array($aProfileId) && count($aProfileId) >= 1) {
         if ($oSolrQuery->getFilterQueryByName('profile_type') == "1")  { // PLACEMENTS
     		$aProfileUnsorted = PlacementProfile::Get("ID_LIST_SEARCH_RESULT",$aProfileId);
-
-    		/*
-    		print_r("<pre>");
-    		print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
-    		print_r("ProfileId: ".count($aProfileId)."<br />");
-    		print_r("NumberProfile: ".count($aProfileUnsorted)."<br />");
-    		print_r($aProfileUnsorted);
-    		print_r("</pre>");
-    		die();
-    		*/
 
     		foreach($aProfile as $oProfile) {
     			$doc = $oSolrSearch->getResultByProfileId($oProfile->GetId());
@@ -219,12 +207,22 @@ try {
     		}
 
     	} elseif($oSolrQuery->getFilterQueryByName('profile_type') == "(1 OR 0)") { // company profiles & placements
-
+    	    
             $aProfile = $oSolrSearch->getProfile();
             $bSort = false;
-
+            
     	}
 
+    	/*
+    	print_r("<pre>");
+    	print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
+    	print_r("ProfileId: ".count($aProfileId)."<br />");
+    	print_r("NumberProfile: ".count($aProfile)."<br />");
+    	print_r($aProfile);
+    	print_r("</pre>");
+    	die();
+    	*/
+    	
     	if ($bSort)
     	{
         	$aProfile = array();
@@ -236,7 +234,6 @@ try {
     	}
     }
 
-
     if (!is_array($aProfile)) {
     	throw new Exception("API 0 Profile objects returned from Profile::Get()");
     }
@@ -246,7 +243,6 @@ try {
      * @var int $iNumFound
      */
     $iNumFound = $oSolrSearch->getNumFound();
-
 
     // JSON encode Response data + Profiles --------------------------------------------
 
@@ -321,11 +317,25 @@ try {
 
 
 } catch (Exception $e) {
-    $aResponse['error'] = $e->getMessage();
+    throw $e;
+}
+
+/* Global Exception Handler */
+function exception_handler($e) {
+    
+    error_log($e);
+
+    $aResponse = array();
+    $aResponse['status'] = 1;
+    $aResponse['error'] = "An error occured.";
+    
     header('Content-type: application/x-json');
     echo $_GET['callback'] . '('.json_encode($aResponse).')';
     die();
-
+    
 }
+
+set_exception_handler('exception_handler');
+
 
 ?>
