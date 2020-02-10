@@ -11,19 +11,15 @@ require_once("/www/vhosts/oneworld365.org/htdocs/classes/RequestRouter.class.php
 try {
 
     // Process URI / Request ------------------------------------------
-
-
     $request_array = Request::GetUri("ARRAY");
 
-
     Logger::DB(2,"API request: ".$_SERVER['REQUEST_URI']);
-
-
 
     if (is_array($request_array)) {
     	foreach($request_array as $uri_segment) {
     		if ($uri_segment == "") continue;
     		if (!NameService::validUriNamespaceIdentifier($uri_segment)) {
+    		    header('HTTP/1.1 404 Not Found');
     			throw new Exception("Invalid uri segment: ".$uri_segment);
     			die();
     		}
@@ -37,16 +33,11 @@ try {
     $_CONFIG['company_home'] = $aBrandConfig[$hostname]['company_base_url'];
     $oBrand = new Brand($aBrandConfig[$hostname]);
 
-
-    //if (!in_array(strtolower($hostname), $permitted_hosts)) {
-    //	throw new Exception("Invalid hostname: ".$hostname);
-    //	die();
-    //}
-
     $permitted_methods = array("search");
 
     if (!in_array(strtolower($request_array[1]), $permitted_methods)) {
-    	throw new Exception("Invalid API method: ".$hostname);
+        header('HTTP/1.1 404 Not Found');
+        throw new Exception("Invalid API method: ".implode("_",$request_array).$hostname);
     	die();
     }
 
