@@ -12,7 +12,7 @@ require_once(BASE_PATH."/classes/db_pgsql.class.php");
 require_once(BASE_PATH."/classes/file.class.php");
 require_once(BASE_PATH."/classes/template.class.php");
 require_once(BASE_PATH."/classes/layout.class.php");
-
+require_once(BASE_PATH."/classes/htmlUtils.class.php");
 require_once(BASE_PATH."/classes/category.class.php");
 require_once(BASE_PATH."/classes/activity.class.php");
 require_once(BASE_PATH."/classes/country.class.php");
@@ -25,7 +25,10 @@ require_once(BASE_PATH."/classes/validation.class.php");
 require_once(BASE_PATH."/classes/name_service.class.php");
 require_once(BASE_PATH."/classes/image.class.php");
 require_once(BASE_PATH."/classes/enquiry.class.php");
+require_once(BASE_PATH."/classes/template.class.php");
+require_once(BASE_PATH."/classes/layout.class.php");
 require_once(BASE_PATH."/classes/pagerJS.class.php");
+
 
 /* @depreciated - to be replaced by Profile* class topology below */
 require_once(BASE_PATH."/classes/company.class.php");
@@ -59,7 +62,6 @@ require_once("./classes/SolrCompanySearch.php");
 require_once("./classes/SolrCombinedProfileSearch.php");
 require_once("./classes/SolrCombinedSearch.php");
 require_once("./classes/SolrQuery.php");
-
 
 /* Placement Profile By Company */
 require_once("./classes/BalancedDistributor.php");

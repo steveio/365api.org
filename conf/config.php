@@ -15,7 +15,7 @@ $solr_config = array(
 		'adapteroptions' => array(
 				'host' => '127.0.0.1',
 				'port' => 8983,
-				'path' => '/solr/',
+				'path' => '/solr/collection1/',
 		)
 );
 
@@ -34,9 +34,13 @@ define('BASE_PATH','/www/vhosts/365api.org/htdocs');
 define('ROOT_PATH',BASE_PATH); // required for some classes
 define('ROOT_PATH_IMAGE_UPLOAD','/www/vhosts/oneworld365.org/htdocs'); // required for some classes
 
+
 define('PATH_2_DATA_DIR',BASE_PATH. '/data/');
 
 define('SITE_TITLE','365 API');
+
+define("FETCHMODE__FULL",0);
+define("FETCHMODE__SUMMARY",1);
 
 
 /* profile types - from db table profile_types */
@@ -46,7 +50,7 @@ define("PROFILE_VOLUNTEER",2);   // placement
 define("PROFILE_TOUR",3); // placement
 define("PROFILE_JOB",4); // placement
 define("PROFILE_SUMMERCAMP",5); // company profile
-define("PROFILE_VOLUNTER_PROJECT",6); // company profile
+define("PROFILE_VOLUNTEER_PROJECT",6); // company profile
 define("PROFILE_SEASONALJOBS",7); // company profile
 define("PROFILE_TEACHING",8); // company profile
 
@@ -123,6 +127,7 @@ $_CONFIG = array(
         'comp_country_map' => 'comp_country_map',
         'image_map' => 'image_map',
         'image' => 'image',
+        'template_home' => '/www/vhosts/365admin.org/htdocs/templates/',
         
         'company_home' => 'company',
 
@@ -135,7 +140,7 @@ $_CONFIG = array(
 
         'profile_category_defaults' => array(
 							PROFILE_SUMMERCAMP => array(3),
-							PROFILE_VOLUNTER_PROJECT => array(2)
+							PROFILE_VOLUNTEER_PROJECT => array(2)
 									),
 
         'profile_activity_defaults' => array(

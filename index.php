@@ -251,11 +251,19 @@ try {
 
     Logger::DB(2,"API Total Result: ".$oSolrSearch->getNumFound().", Found profile id: ".count($aProfileId).", profiles objects returned: ".count($aProfile));
 
+    $sProfileHTML = "";
+
     foreach($aProfile as $oProfile) {
         if (!is_object($oProfile)) continue;        
-    	$aResponse['data']['profile'][] = $oProfile->toJSON();
+    	//$aResponse['data']['profile'][] = $oProfile->toJSON();
+        $oTemplate = new Template();
+        $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
+        $oTemplate->Set("oProfile", $oProfile);
+        $oTemplate->LoadTemplate("profile_summary.php");
+        $sProfileHTML .= $oTemplate->Render();
     }
     
+    $aResponse['data']['profile']['html'] = $sProfileHTML;
 
     // add any facetField results
     if (count($oSolrQuery->getFacetField()) >= 1) {
