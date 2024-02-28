@@ -132,8 +132,7 @@ try {
     // RUN SEARCH ------------------------------------------------------
 
     // pagesize
-    //$iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
-    $iRows = 3;
+    $iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
     // start index
     $iStart = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0)  ? (($_REQUEST['start'] -1) * $iRows) : 0;
     $iPageNum = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0) ? $_REQUEST['start'] : 0;
@@ -273,12 +272,10 @@ try {
         $aResponse['data']['profile']['html'] = $sProfileHTML;
 
     } else { // return structured JSON format data
-        $aProfile = array();
         foreach($aProfile as $oProfile) {
             if (!is_object($oProfile)) continue;
-            $aProfile[] = $oProfile->toJSON();
+	    $aResponse['data']['profile'][] = $oProfile->toJSON();
         }        
-        $aResponse['data']['profile'] = $aProfile;
     }
 
 
