@@ -132,7 +132,8 @@ try {
     // RUN SEARCH ------------------------------------------------------
 
     // pagesize
-    $iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
+    //$iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
+    $iRows = 3;
     // start index
     $iStart = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0)  ? (($_REQUEST['start'] -1) * $iRows) : 0;
     $iPageNum = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0) ? $_REQUEST['start'] : 0;
@@ -251,6 +252,8 @@ try {
     $aResponse['start'] = $iStart;
     $aResponse['rows'] = $iRows;
     $aResponse['hasPager'] = false;
+    $aResponse['rf'] = $rf;
+
 
     Logger::DB(2,"API Total Result: ".$oSolrSearch->getNumFound().", Found profile id: ".count($aProfileId).", profiles objects returned: ".count($aProfile));
 
@@ -266,14 +269,19 @@ try {
             $oTemplate->LoadTemplate("profile_summary.php");
             $sProfileHTML .= $oTemplate->Render();
         }
+
+        $aResponse['data']['profile']['html'] = $sProfileHTML;
+
     } else { // return structured JSON format data
+        $aProfile = array();
         foreach($aProfile as $oProfile) {
             if (!is_object($oProfile)) continue;
-            $aResponse['data']['profile'][] = $oProfile->toJSON();
-        }
+            $aProfile[] = $oProfile->toJSON();
+        }        
+        $aResponse['data']['profile'] = $aProfile;
     }
 
-    $aResponse['data']['profile']['html'] = $sProfileHTML;
+
 
     // add any facetField results
     if (count($oSolrQuery->getFacetField()) >= 1) {
