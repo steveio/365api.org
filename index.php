@@ -48,9 +48,12 @@ try {
     $oSolrQuery->parseFilterQueryFromRequest();
     $oSolrQuery->setDefaultProfileType();
 
-
-    // refine search UI panel visibility
+    // refine search panel UI visibility
     $rf = (isset($_REQUEST['rf']) && $_REQUEST['rf'] == 1) ? 1 : 0;
+    
+
+    // return data type (default to JSON)
+    $returnDataType = (isset($_REQUEST['rt']) && $_REQUEST['rt'] == "HTML") ? $_REQUEST['rt'] : "JSON";
 
     // query origin 0 = website, 1 = admin system
     $query_origin = (isset($_REQUEST['o']) && in_array($_REQUEST['o'],array(0,1))) ? $_REQUEST['o'] : 0;
@@ -175,7 +178,8 @@ try {
     
     if (is_array($aProfileId) && count($aProfileId) >= 1) {
         if ($oSolrQuery->getFilterQueryByName('profile_type') == "1")  { // PLACEMENTS
-    		$aProfileUnsorted = PlacementProfile::Get("ID_LIST_SEARCH_RESULT",$aProfileId);
+    		
+            $aProfileUnsorted = PlacementProfile::Get("ID_LIST_SEARCH_RESULT",$aProfileId);
 
     		foreach($aProfile as $oProfile) {
     			$doc = $oSolrSearch->getResultByProfileId($oProfile->GetId());
@@ -247,22 +251,28 @@ try {
     $aResponse['start'] = $iStart;
     $aResponse['rows'] = $iRows;
     $aResponse['hasPager'] = false;
-    $aResponse['rf'] = $rf;
 
     Logger::DB(2,"API Total Result: ".$oSolrSearch->getNumFound().", Found profile id: ".count($aProfileId).", profiles objects returned: ".count($aProfile));
 
-    $sProfileHTML = "";
-
-    foreach($aProfile as $oProfile) {
-        if (!is_object($oProfile)) continue;        
-    	//$aResponse['data']['profile'][] = $oProfile->toJSON();
-        $oTemplate = new Template();
-        $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
-        $oTemplate->Set("oProfile", $oProfile);
-        $oTemplate->LoadTemplate("profile_summary.php");
-        $sProfileHTML .= $oTemplate->Render();
-    }
+    if ($returnDataType == "HTML") // pre-rendered server side HTML template
+    {
+        $sProfileHTML = "";
     
+        foreach($aProfile as $oProfile) {
+            if (!is_object($oProfile)) continue;        
+            $oTemplate = new Template();
+            $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
+            $oTemplate->Set("oProfile", $oProfile);
+            $oTemplate->LoadTemplate("profile_summary.php");
+            $sProfileHTML .= $oTemplate->Render();
+        }
+    } else { // return structured JSON format data
+        foreach($aProfile as $oProfile) {
+            if (!is_object($oProfile)) continue;
+            $aResponse['data']['profile'][] = $oProfile->toJSON();
+        }
+    }
+
     $aResponse['data']['profile']['html'] = $sProfileHTML;
 
     // add any facetField results
@@ -286,7 +296,8 @@ try {
 
 
     // build pager
-    if ($iNumFound > $iRows) {
+    if ($iNumFound > $iRows) 
+    {
 
     	$oPager = new PagedResultSet();
     	$oPager->SetResultsPerPage($iRows);
@@ -309,6 +320,7 @@ try {
     print_r("</pre>");
     die(__FILE__."::".__LINE__);
     */
+
 
     header('Content-type: application/x-json');
     echo $_GET['callback'] . '('.json_encode($aResponse).')';
