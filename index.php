@@ -50,7 +50,6 @@ try {
 
     // refine search panel UI visibility
     $rf = (isset($_REQUEST['rf']) && $_REQUEST['rf'] == 1) ? 1 : 0;
-    
 
     // return data type (default to JSON)
     $returnDataType = (isset($_REQUEST['rt']) && $_REQUEST['rt'] == "HTML") ? $_REQUEST['rt'] : "JSON";
@@ -58,6 +57,11 @@ try {
     // query origin 0 = website, 1 = admin system
     $query_origin = (isset($_REQUEST['o']) && in_array($_REQUEST['o'],array(0,1))) ? $_REQUEST['o'] : 0;
 
+    // search type: 0 = facet only, 1 return profile results
+    $search_type = (isset($_REQUEST['st']) && $_REQUEST['st'] == 0) ? 0 : 1;
+    
+    $iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
+    
     // sort company results by prod_id (disabled for admin system requests)
     if ($oSolrQuery->getFilterQueryByName('profile_type') == "0") {
     	$oSolrQuery->setSort('prod_type','desc');
@@ -67,7 +71,15 @@ try {
      * Setup SOLR Query & facets from URI request array
      *
      */
-    $oSolrQuery->setupFilterQuery($request_array);
+
+    if ($search_type == 0) // facet only query, default query unless keywords supplied
+    {
+        $query = (strlen($request_array[2]) > 1) ? $request_array[2] : "*:*";
+        $oSolrQuery->setQuery($query);
+    } else {
+        $oSolrQuery->setupFilterQuery($request_array);
+    }
+
     $oSolrQuery->setupFacetFieldset();
     
     /**
@@ -88,14 +100,7 @@ try {
             break;
     }
 
-    /*
-    print_r("<pre>");
-    print_r($oSolrQuery->getQuery()."\n");
-    print_r($oSolrQuery);
-    print_r("</pre>");
-    die();
-    */
-    
+
     // Placement search - filter inactive profiles
     if ($oSolrQuery->getFilterQueryByName('profile_type') == 1)
         $oSolrQuery->setFilterQueryByName("active","1");
@@ -131,9 +136,7 @@ try {
 
     // RUN SEARCH ------------------------------------------------------
 
-    // pagesize
-    $iRows = (is_numeric($_REQUEST['rows']) && $_REQUEST['rows'] < 1000) ? $_REQUEST['rows'] : 50;
-    // start index
+    // pagesize / start index
     $iStart = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0)  ? (($_REQUEST['start'] -1) * $iRows) : 0;
     $iPageNum = (is_numeric($_REQUEST['start']) && $_REQUEST['start'] != 0) ? $_REQUEST['start'] : 0;
 
@@ -147,7 +150,7 @@ try {
 
     if ($oSolrQuery->getFilterQueryByName('profile_type') == "(1 OR 0)")
     {
-	$oSolrSearch->setBoostQuery('prod_type:5^25, prod_type:3^5, prod_type:2^3, prod_type:1^2, prod_type:0');
+	   $oSolrSearch->setBoostQuery('prod_type:5^25, prod_type:3^5, prod_type:2^3, prod_type:1^2, prod_type:0');
     }
 
     // add facetField
@@ -166,6 +169,16 @@ try {
 
     $oSolrSearch->setFacetFieldFilterQueryExclude($oSolrQuery->getFacetFieldFilterQueryExclude());
     $oSolrSearch->setSiteId($oBrand->GetSiteId());
+
+
+    /*
+    print_r("<pre>");
+    print_r($oSolrQuery);
+    print_r($oSolrSearch);
+    print_r("</pre>");
+    die();
+    */
+
     
     // run the search
     $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort());
@@ -208,7 +221,7 @@ try {
             
     	}
 
-    	/*
+        /*
     	print_r("<pre>");
     	print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
     	print_r("ProfileId: ".count($aProfileId)."<br />");
@@ -217,6 +230,7 @@ try {
     	print_r("</pre>");
     	die();
     	*/
+
     	
     	if ($bSort)
     	{
@@ -256,11 +270,15 @@ try {
 
     Logger::DB(2,"API Total Result: ".$oSolrSearch->getNumFound().", Found profile id: ".count($aProfileId).", profiles objects returned: ".count($aProfile));
 
+
     if ($returnDataType == "HTML") // pre-rendered server side HTML template
     {
+
         $sProfileHTML = "";
-    
-        foreach($aProfile as $oProfile) {
+
+        for($i=0; $i<8; $i++)
+        {
+            $oProfile = array_shift($aProfile);
             if (!is_object($oProfile)) continue;        
             $oTemplate = new Template();
             $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
@@ -269,12 +287,27 @@ try {
             $sProfileHTML .= $oTemplate->Render();
         }
 
-        $aResponse['data']['profile']['html'] = $sProfileHTML;
+        $aResponse['data']['profile']['b1'] = $sProfileHTML;
+
+        $sProfileHTML = "";
+
+        for($i=0; $i<count($aProfile); $i++)
+        {
+            $oProfile = array_shift($aProfile);
+            if (!is_object($oProfile)) continue;
+            $oTemplate = new Template();
+            $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
+            $oTemplate->Set("oProfile", $oProfile);
+            $oTemplate->LoadTemplate("profile_summary.php");
+            $sProfileHTML .= $oTemplate->Render();
+        }
+        
+        $aResponse['data']['profile']['b2'] = $sProfileHTML;
 
     } else { // return structured JSON format data
         foreach($aProfile as $oProfile) {
             if (!is_object($oProfile)) continue;
-	    $aResponse['data']['profile'][] = $oProfile->toJSON();
+            $aResponse['data']['profile'][] = $oProfile->toJSON();
         }        
     }
 
@@ -301,7 +334,7 @@ try {
 
 
     // build pager
-    if ($iNumFound > $iRows) 
+    if ($iRows != 0 && ($iNumFound > $iRows)) 
     {
 
     	$oPager = new PagedResultSet();
@@ -311,20 +344,12 @@ try {
 
     	$aResponse['data']['hasPager'] = true;
     	$aResponse['data']['pagerHtml'] = $oPager->RenderJSPaginator();
+    	$aResponse['pageNum'] = ($iPageNum == 0) ? 1 : $iPageNum;
+    	$aResponse['totalPages'] = (is_object($oPager)) ? $oPager->GetNumPages() : 1;
 
     } else {
     	$aResponse['data']['hasPager'] = false;
     }
-
-    $aResponse['pageNum'] = ($iPageNum == 0) ? 1 : $iPageNum;
-    $aResponse['totalPages'] = (is_object($oPager)) ? $oPager->GetNumPages() : 1;
-
-    /*
-    print_r("<pre>");
-    print_r($aResponse);
-    print_r("</pre>");
-    die(__FILE__."::".__LINE__);
-    */
 
 
     header('Content-type: application/x-json');
