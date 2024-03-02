@@ -289,9 +289,11 @@ try {
 
         $aResponse['data']['profile']['b1'] = $sProfileHTML;
 
+	$fetch = count($aProfile);
+
         $sProfileHTML = "";
 
-        for($i=0; $i<count($aProfile); $i++)
+        for($i=0; $i<$fetch; $i++)
         {
             $oProfile = array_shift($aProfile);
             if (!is_object($oProfile)) continue;
