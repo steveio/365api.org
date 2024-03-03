@@ -145,7 +145,14 @@ try {
     
 
     $oSolrSearch = new $class($solr_config);
-    $oSolrSearch->setRows($iRows);
+    
+    if (get_class($oSolrSearch) == SolrCombinedProfileSearch)
+    {
+        $oSolrSearch->setRowsToFetch($iRows);
+        $oSolrSearch->setRows($iRows * 4);
+    } else {
+        $oSolrSearch->setRows($iRows);
+    }
     $oSolrSearch->setStart($iStart);
 
     if ($oSolrQuery->getFilterQueryByName('profile_type') == "(1 OR 0)")
@@ -170,26 +177,29 @@ try {
     $oSolrSearch->setFacetFieldFilterQueryExclude($oSolrQuery->getFacetFieldFilterQueryExclude());
     $oSolrSearch->setSiteId($oBrand->GetSiteId());
 
-
-    /*
-    print_r("<pre>");
-    print_r($oSolrQuery);
-    print_r($oSolrSearch);
-    print_r("</pre>");
-    die();
-    */
-
-    
     // run the search
-    $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort());
+    $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort(),"id,profile_id,profile_type,company_id,score");
     $oSolrSearch->processResult();
 
     // fetch returned profile id's, instantiate collection of profile objects
     $aProfileId = $oSolrSearch->getId();
     $aProfile = array();
     $bSort = true;
+
     
+    /*
+    print_r("<pre>");
+    print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
+    print_r("ProfileId: ".count($aProfileId)."<br />");
+    print_r("NumberProfile: ".count($oSolrSearch->getProfile())."<br />");
+    print_r($oSolrQuery);
+    print_r($oSolrSearch);
+    print_r("</pre>");
+    die();
+    */
+
     if (is_array($aProfileId) && count($aProfileId) >= 1) {
+        
         if ($oSolrQuery->getFilterQueryByName('profile_type') == "1")  { // PLACEMENTS
     		
             $aProfileUnsorted = PlacementProfile::Get("ID_LIST_SEARCH_RESULT",$aProfileId);
@@ -220,17 +230,6 @@ try {
             $bSort = false;
             
     	}
-
-        /*
-    	print_r("<pre>");
-    	print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
-    	print_r("ProfileId: ".count($aProfileId)."<br />");
-    	print_r("NumberProfile: ".count($aProfile)."<br />");
-    	print_r($aProfile);
-    	print_r("</pre>");
-    	die();
-    	*/
-
     	
     	if ($bSort)
     	{
@@ -242,10 +241,11 @@ try {
         	}
     	}
     }
-
+    
     if (!is_array($aProfile)) {
     	throw new Exception("API 0 Profile objects returned from Profile::Get()");
     }
+
 
     /**
      * SOLR Results found
@@ -351,7 +351,8 @@ try {
     	$aResponse['data']['hasPager'] = false;
     }
 
-
+    
+    
     header('Content-type: application/x-json');
     echo $_GET['callback'] . '('.json_encode($aResponse).')';
     die();
