@@ -265,10 +265,9 @@ try {
 
         $sProfileHTML = "";
 
-        for($i=0; $i<5; $i++)
+        for($i=0; $i<8; $i++)
         {
             $oProfile = array_shift($aProfile);
-            $oProfile = $aProfile[5];
             if (!is_object($oProfile)) continue;        
             $oTemplate = new Template();
             $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
