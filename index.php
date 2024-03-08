@@ -186,17 +186,6 @@ try {
     $aProfile = array();
     $bSort = true;
 
-    
-    /*
-    print_r("<pre>");
-    print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
-    print_r("ProfileId: ".count($aProfileId)."<br />");
-    print_r("NumberProfile: ".count($oSolrSearch->getProfile())."<br />");
-    print_r($oSolrQuery);
-    print_r($oSolrSearch);
-    print_r("</pre>");
-    die();
-    */
 
     if (is_array($aProfileId) && count($aProfileId) >= 1) {
         
@@ -283,6 +272,7 @@ try {
             $oTemplate = new Template();
             $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
             $oTemplate->Set("oProfile", $oProfile);
+            $oTemplate->Set("sImgSize", "_mf");
             $oTemplate->LoadTemplate("profile_summary.php");
             $sProfileHTML .= $oTemplate->Render();
         }
@@ -300,6 +290,7 @@ try {
             $oTemplate = new Template();
             $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
             $oTemplate->Set("oProfile", $oProfile);
+            $oTemplate->Set("sImgSize", "_mf");
             $oTemplate->LoadTemplate("profile_summary.php");
             $sProfileHTML .= $oTemplate->Render();
         }
@@ -353,8 +344,18 @@ try {
     	$aResponse['data']['hasPager'] = false;
     }
 
-    
-    
+    /*
+    print_r("<pre>");
+    print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
+    print_r("ProfileId: ".count($aProfileId)."<br />");
+    print_r("NumberProfile: ".count($oSolrSearch->getProfile())."<br />");
+    print_r($oSolrQuery);
+    print_r($oSolrSearch);
+    print_r($aResponse);
+    print_r("</pre>");
+    die();
+    */
+
     header('Content-type: application/x-json');
     echo $_GET['callback'] . '('.json_encode($aResponse).')';
     die();
