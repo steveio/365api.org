@@ -24,7 +24,7 @@ $solr_config = array(
 define('DEBUG',FALSE);
 define('DEV',FALSE);
 
-define('TEST_EMAIL','');
+define('TEST_EMAIL','steveedwards01@yahoo.co.uk');
 
 /* 0 = none, 1 = error, 2 = debug, 3 = verbose debug */
 define('LOG_PATH',"/www/vhosts/365api.org/logs/365api_application.log");
@@ -118,7 +118,8 @@ define('REFDATA_JOB_OPTIONS_PREFIX','JO_');
 
 
 /* config params required to make classes work */
-$_CONFIG = array( 
+$_CONFIG = array(
+        'url' => 'https://www.oneworld365.org',
         'company_table' => 'company',
         'placement_table' => 'profile_hdr',
         'profile_hdr_table' => 'profile_hdr', /* placement table is a view in some sites, these must use profile_hdr for add/update */
