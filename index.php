@@ -146,7 +146,7 @@ try {
 
     $oSolrSearch = new $class($solr_config);
     
-    if (get_class($oSolrSearch) == SolrCombinedProfileSearch)
+    if (get_class($oSolrSearch) == "SolrCombinedProfileSearch")
     {
         $oSolrSearch->setRowsToFetch($iRows);
         $oSolrSearch->setRows($iRows * 4);
@@ -265,16 +265,17 @@ try {
 
         $sProfileHTML = "";
 
-        for($i=0; $i<8; $i++)
+        for($i=0; $i<5; $i++)
         {
             $oProfile = array_shift($aProfile);
+            $oProfile = $aProfile[5];
             if (!is_object($oProfile)) continue;        
             $oTemplate = new Template();
             $oTemplate->SetTemplatePath("/www/vhosts/365admin.org/htdocs/templates/");
             $oTemplate->Set("oProfile", $oProfile);
             $oTemplate->Set("sImgSize", "_mf");
             $oTemplate->LoadTemplate("profile_summary.php");
-            $sProfileHTML .= $oTemplate->Render();
+            $sProfileHTML .= utf8_encode($oTemplate->Render());
         }
 
         $aResponse['data']['profile']['b1'] = $sProfileHTML;
@@ -292,7 +293,7 @@ try {
             $oTemplate->Set("oProfile", $oProfile);
             $oTemplate->Set("sImgSize", "_mf");
             $oTemplate->LoadTemplate("profile_summary.php");
-            $sProfileHTML .= $oTemplate->Render();
+            $sProfileHTML .= utf8_encode($oTemplate->Render());
         }
         
         $aResponse['data']['profile']['b2'] = $sProfileHTML;
@@ -344,14 +345,16 @@ try {
     	$aResponse['data']['hasPager'] = false;
     }
 
+
     /*
-    print_r("<pre>");
     print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
     print_r("ProfileId: ".count($aProfileId)."<br />");
     print_r("NumberProfile: ".count($oSolrSearch->getProfile())."<br />");
     print_r($oSolrQuery);
     print_r($oSolrSearch);
+    print_r("<pre>");
     print_r($aResponse);
+    print_r(json_encode($aResponse));
     print_r("</pre>");
     die();
     */
