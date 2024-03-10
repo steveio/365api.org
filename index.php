@@ -178,7 +178,7 @@ try {
     $oSolrSearch->setSiteId($oBrand->GetSiteId());
 
     // run the search
-    $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort(),"id,profile_id,profile_type,company_id,score");
+    $oSolrSearch->search($oSolrQuery->getQuery(),$oSolrQuery->getFilterQuery(),$oSolrQuery->getSort(),array("id","profile_id","profile_type","company_id","score"));
     $oSolrSearch->processResult();
 
     // fetch returned profile id's, instantiate collection of profile objects
@@ -343,7 +343,6 @@ try {
     } else {
     	$aResponse['data']['hasPager'] = false;
     }
-
 
     /*
     print_r("SOLR Count: ".$oSolrSearch->getNumFound()."<br />");
